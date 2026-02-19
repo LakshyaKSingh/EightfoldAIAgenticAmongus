@@ -1,0 +1,11 @@
+{
+  "team_name":   "Your Team Name",
+  "team_id":     "your_unstop_id",
+  "institution": "Your College / Company",
+  "members": [
+    {"name": "Member 1", "email": "member1@example.edu", "role": "lead"},
+    {"name": "Member 2", "email": "member2@example.edu", "role": "member"},
+    {"name": "Member 3", "email": "member3@example.edu", "role": "member"}
+  ],
+  "entry_point": "agent.py"
+}

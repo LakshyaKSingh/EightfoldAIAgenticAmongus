@@ -1,0 +1,10 @@
+{
+  "team_name": "Sample Team",
+  "team_id": "SAMPLE001",
+  "institution": "Example University",
+  "members": [
+    {"name": "Alice Smith",   "email": "alice@example.edu",  "role": "lead"},
+    {"name": "Bob Jones",     "email": "bob@example.edu",    "role": "member"}
+  ],
+  "entry_point": "agent.py"
+}

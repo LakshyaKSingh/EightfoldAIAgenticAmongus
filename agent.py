@@ -124,9 +124,9 @@ def run_agent(df: pd.DataFrame, oracle, budget: int) -> np.ndarray:
     confident_1_idx = unlabeled_idx[final_probs[unlabeled_idx] > 0.80]
     confident_0_idx = unlabeled_idx[final_probs[unlabeled_idx] < 0.20]
     
-    # Restored 3:1 ratio to protect Precision
+    # Reduced multiplier for 0s to 2.5 to increase relative weight of 1s in final model
     num_1s = len(confident_1_idx)
-    num_0s_to_keep = min(len(confident_0_idx), num_1s * 3) 
+    num_0s_to_keep = min(len(confident_0_idx), int(num_1s * 2.5)) 
     
     np.random.seed(42)
     if len(confident_0_idx) > num_0s_to_keep:
@@ -156,8 +156,7 @@ def run_agent(df: pd.DataFrame, oracle, budget: int) -> np.ndarray:
         final_model.fit(X_final_train, y_final_train)
         
         raw_probs = final_model.predict_proba(X_scaled)[:, 1]
-        
-        # 0.35 is the sweet spot mathematically based on your previous runs
+        # 0.35 threshold
         predictions = (raw_probs > 0.35).astype(int)
     else:
         predictions = np.zeros(len(df))

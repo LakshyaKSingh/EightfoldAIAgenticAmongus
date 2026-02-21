@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import precision_recall_curve
 
 def engineer_features(df):
     """V7: Advanced Feature Engineering targeting specific fraud topologies"""
@@ -156,8 +157,19 @@ def run_agent(df: pd.DataFrame, oracle, budget: int) -> np.ndarray:
         final_model.fit(X_final_train, y_final_train)
         
         raw_probs = final_model.predict_proba(X_scaled)[:, 1]
-        # 0.35 threshold
-        predictions = (raw_probs > 0.35).astype(int)
+        
+        # --- DYNAMIC THRESHOLD: self-calibrating from labeled oracle data ---
+        # Use the 100 oracle-queried ground truths to find the threshold that
+        # maximises F1 on known labels, rather than a hard-coded 0.35.
+        labeled_probs = final_model.predict_proba(X_scaled[labeled_idx])[:, 1]
+        precisions, recalls, thresholds = precision_recall_curve(y_train, labeled_probs)
+        f1_scores = 2 * precisions * recalls / (precisions + recalls + 1e-8)
+        best_threshold_idx = np.argmax(f1_scores)
+        best_threshold = float(thresholds[best_threshold_idx]) if best_threshold_idx < len(thresholds) else 0.35
+        # Clip to a safe range to prevent degenerate solutions on the local data
+        best_threshold = np.clip(best_threshold, 0.25, 0.45)
+        
+        predictions = (raw_probs > best_threshold).astype(int)
     else:
         predictions = np.zeros(len(df))
         
